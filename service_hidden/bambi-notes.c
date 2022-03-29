@@ -13,7 +13,6 @@
 #define NOTE_SIZE 40
 #define DEFAULT_NOTE "Well, it's a note-taking service. What did you expect?"
 
-
 void setup() {
     setbuf(stdin, NULL);
     setbuf(stdout, NULL);
@@ -175,10 +174,14 @@ void create_note(struct User* user) {
         puts("Already Occupied!");
     }
 
-    
-
+    user->notes[idx] = malloc(NOTE_SIZE);
+    long result = fgets(note_ptr, NOTE_SIZE, stdin);
+    if (result == 0) {
+        exit(EXIT_SUCCESS);
+    }
+    puts("Note Created!");
 }
-void print_note(struct User* user) {}
+
 void list_saved_notes(struct User* user) {
 
     printf("\n\n===== [%s's Notes] =====\n", user->username);
@@ -286,7 +289,10 @@ void save_note(struct User* user) {
         return;
     }
 
-    // Check if note exists
+    if (user->in_use[idx]) {
+        printf("Note %d does not exist!\n", idx);
+        return;
+    }
 
     printf(
         "Which File to save into?" NL
@@ -351,9 +357,24 @@ int main(int argc, const char * argv[]) {
         switch (menu_option)
         {
         case 1:
-            /* code */
+            create_note(current_user);
             break;
-        
+        case 2:
+            
+            break;
+        case 3:
+            list_saved_notes(current_user);
+            break;
+        case 4:
+            delete_note(current_user);
+            break;
+        case 5:
+            load_note(current_user);
+            break;
+        case 6:
+            save_note(current_user);
+            break;
+            
         default:
             break;
         }
