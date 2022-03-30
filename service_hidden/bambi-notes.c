@@ -26,6 +26,22 @@ long getlong() {
     return strtol(buf, NULL, 0);
 }
 
+#define FILTERED_CHARS "./\n"
+void sanitze_string(char * input) {
+    size_t offset = 0;
+    while (input[offset] != 0)
+    {
+        size_t filter_offset = 0;
+        while (FILTERED_CHARS[filter_offset] != 0)
+        {
+            if (input[offset] == FILTERED_CHARS[filter_offset]) {
+                input[offset] = 0;
+                // break? -- Maybe there are a few more options for exploits if it breaks here ...
+            }
+        }
+    }
+}
+
 struct User {
     char username[40];
     char * notes[10];
@@ -175,7 +191,7 @@ void create_note(struct User* user) {
     }
 
     user->notes[idx] = malloc(NOTE_SIZE);
-    long result = fgets(note_ptr, NOTE_SIZE, stdin);
+    long result = fgets(user->notes[idx], NOTE_SIZE, stdin);
     if (result == 0) {
         exit(EXIT_SUCCESS);
     }
@@ -301,7 +317,9 @@ void save_note(struct User* user) {
 
     char path_buf[sizeof(STORAGE_DIR) + sizeof(user->username) + 0x20];
     int bytes_written = snprintf(path_buf, sizeof(path_buf), STORAGE_DIR, user->username);
-    fgets(path_buf + bytes_written, sizeof(path_buf) - bytes_written, stdin);
+    if (!fgets(path_buf + bytes_written, sizeof(path_buf) - bytes_written, stdin)) {
+        perror("Failed to get filename!");
+    }
 
     // TODO: Sanitize path
     long filefd = open(path_buf, O_WRONLY | O_CREAT, 0644);
