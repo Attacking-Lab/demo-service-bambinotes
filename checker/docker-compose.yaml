@@ -1,0 +1,42 @@
+version: '2.1'
+
+services:
+  bambinotes-checker:
+    build: .
+    # The checker runs a HTTP interfaces, so we need to map port 3031 to the outside (port 8000).
+    ports:
+      - 8000:8000
+    environment:
+      - MONGO_ENABLED=1
+      - MONGO_HOST=bambinotes-mongo
+      - MONGO_PORT=27017
+      - MONGO_USER=bambinotes
+      - MONGO_PASSWORD=bambinotes
+    mem_limit: 1G
+    memswap_limit: 2G
+    ulimits:
+      core:
+        soft: 0
+        hard: 0
+      nproc:
+        soft: 4000
+        hard: 4000
+  # The python checkerlib requires a mongo db!
+  bambinotes-mongo:
+    image: mongo
+    ports:
+      - 27017:27017
+    volumes:
+      - ./data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: bambinotes
+      MONGO_INITDB_ROOT_PASSWORD: bambinotes
+    mem_limit: 1G
+    memswap_limit: 2G
+    ulimits:
+      core:
+        soft: 0
+        hard: 0
+      nproc:
+        soft: 4000
+        hard: 4000

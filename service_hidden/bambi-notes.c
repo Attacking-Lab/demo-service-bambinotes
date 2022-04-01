@@ -114,6 +114,8 @@ struct User* user_register() {
     struct User *user = init_user();
     strcpy(user->username, username);
     return user;
+
+    puts("Registration successful!");
 }
 
 struct User* user_login() {
@@ -159,6 +161,8 @@ struct User* user_login() {
     struct User *user = init_user();
     strcpy(user->username, username);
     return user;
+
+    puts("Login successful!");
 }
 
 void main_menu() {
@@ -195,6 +199,7 @@ void create_note(struct User* user) {
     }
 
     user->notes[idx] = malloc(NOTE_SIZE);
+    printf("Note [%d]\n> ", idx);
     long result = fgets(user->notes[idx], NOTE_SIZE, stdin);
     if (result == 0) {
         exit(EXIT_SUCCESS);
@@ -238,9 +243,10 @@ void list_saved_notes(struct User* user) {
         }
 
         // Sendfile trolololo?...
-        printf(" > %s\n", entry->d_name);
+        printf(" | %s\n", entry->d_name);
     }
 
+    puts("===== [End of Notes] =====");
     closedir(dirfd);
 }
 
@@ -251,6 +257,7 @@ void delete_note(struct User* user) {
     if ((note_idx >= 0) && (note_idx < 10)) {
         if (user->in_use[note_idx]) {
             user->in_use[note_idx] = 0;
+            puts("Note deleted!");
         } else {
             printf("Note %d doesn't exist!\n", note_idx);
             // Maybe actually free the given val?
@@ -287,6 +294,7 @@ void load_note(struct User* user) {
     int filefd = open(path_buf, O_RDONLY);
     if (filefd < 0) {
         printf("Failed to open %s" NL, path_buf);
+        return;
     }
 
     int bytes_read = read(filefd, user->notes[idx], NOTE_SIZE);  
@@ -340,7 +348,7 @@ void save_note(struct User* user) {
         perror("Failed to write note!");
         exit(EXIT_FAILURE);
     }
-    close(0);
+    close(filefd);
 }
 
 int main(int argc, const char * argv[]) {
