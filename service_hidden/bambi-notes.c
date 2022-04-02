@@ -348,6 +348,8 @@ void save_note(struct User* user) {
         perror("Failed to write note!");
         exit(EXIT_FAILURE);
     }
+
+    puts("Note saved!");
     close(filefd);
 }
 

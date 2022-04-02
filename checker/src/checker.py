@@ -93,17 +93,17 @@ class BambiNoteClient():
         await self.writer.drain()
 
         line = await self.reader.readuntil(b"> ")
-        assert_in(line, "Username:\n", "Login Failed!")
+        assert_in(line, b"Username:\n", "Login Failed!")
         self.writer.write(username.encode() + b"\n")
         await self.writer.drain()
 
         line = await self.reader.readuntil(b"> ")
-        assert_in(line, "Password:\n", "Login Failed!")
+        assert_in(line, b"Password:\n", "Login Failed!")
         self.writer.write(password.encode() + b"\n")
         await self.writer.drain()
 
         line = await self.reader.readline()
-        assert_in(line, "Login successful!", "Login Failed!")
+        assert_in(line, b"Login successful!", "Login Failed!")
         self.state = (username, password)
 
     async def create_note(self, idx, note_data):
@@ -111,7 +111,7 @@ class BambiNoteClient():
             raise InternalErrorException("Trying invoke authenticated method in unauthenticated context")
         
         prompt = await self.reader.readuntil(b"> ")
-        self.writer.write("1\n")
+        self.writer.write(b"1\n")
         await self.writer.drain()
 
         prompt = await self.reader.readuntil(b"> ")
@@ -128,13 +128,16 @@ class BambiNoteClient():
         await self.writer.drain()
 
         line = await self.reader.readline()
-        assert_equals(line, "Note Created!", "Failed to create a new note")
+        assert_equals(line, b"Note Created!", "Failed to create a new note")
 
     async def list_notes(self):
         self.assert_authenticated()
 
+        notes = {}
+        notes['saved'] = []
+
         prompt = await self.reader.readuntil(b"> ")
-        self.writer.write("3\n")
+        self.writer.write(b"3\n")
         await self.writer.drain()
 
         await self.reader.readuntil(f"\n\n===== [{self.state[0]}'s Notes] =====\n".encode())
@@ -148,24 +151,34 @@ class BambiNoteClient():
                     break
 
                 if line == b"===== [End of Notes] =====\n":
-                    return
-
-                # TODO PARSE NOTE ENTRY ITSELF
+                    return notes
+                
+                assert_equals(line[:4], b"    ", "Failed to list Notes!")
+                assert_equals(line[-1], 0xa,     "Failed to list Notes!")
+                idx, text = (line[4:-1].split(" | ", maxsplit=1))
+                
+                try:
+                    notes[int(idx)] = text
+                except ValueError:
+                    raise MumbleException("Failed to list Notes!")
 
         if line == b"Saved Notes:\n":
             while True:
                 line == await self.reader.readline()
                 if line == b"===== [End of Notes] =====\n":
-                    return
+                    return notes
 
                 assert_equals(line[:3], b" | ", "Failed to list Notes!")
                 filename = line[3:-1]
+                notes['saved'].append(filename)
+                
+        return notes
 
     async def delete_note(self, idx):
         self.assert_authenticated()
         
         prompt = await self.reader.readuntil(b"> ")
-        self.writer.write("4\n")
+        self.writer.write(b"4\n")
         await self.writer.drain()
 
         prompt = await self.reader.readuntil(b"> ")
@@ -175,13 +188,13 @@ class BambiNoteClient():
         await self.writer.flush()
 
         line = await self.reader.readline()
-        assert_equals(line, b"Note deleted\n")
+        assert_equals(line, b"Note deleted\n", "Failed to delete Note!")
 
     async def load_note(self, idx, filename):
         self.assert_authenticated()
         
         prompt = await self.reader.readuntil(b"> ")
-        self.writer.write("5\n")
+        self.writer.write(b"5\n")
         await self.writer.drain()
 
         prompt = await self.reader.readuntil(b"> ")
@@ -194,14 +207,28 @@ class BambiNoteClient():
         self.writer.write(f"{filename}\n".encode())
         await self.writer.drain()
 
-
-
-    
     async def save_note(self, idx, filename):
         self.assert_authenticated()
-        pass
 
+        prompt = await self.reader.readuntil(b"> ")
+        self.writer.write(b"6\n")
+        await self.writer.drain()
 
+        prompt = await self.reader.readuntil("> ")
+        assert_equals( prompt, b"Which note to save?\n> ", "Failed to save Note!")
+        self.writer.write(f"{idx}\n".encode())
+        await self.writer.drain()
+
+        line = await self.reader.readline()
+        #if line == 
+        assert_equals(line, b"Which file to save into?\n", "Failed to save Note!")
+        prompt = await self.reader.readuntil("> ")
+        assert_equals(prompt, b"> ", "Failed to save Note!")
+        self.writer.write(f"{filename}\n".encode())
+        await self.writer.drain()
+
+        line = self.reader.readline()
+        assert_equals(line, b"Note saved!\n", "Failed to save Note!")
 
 @checker.putflag(0)
 async def putflag_test(
