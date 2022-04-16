@@ -27,7 +27,7 @@ from enochecker3.utils import assert_equals, assert_in
 
 
 SERVICE_PORT = 1337
-checker = Enochecker("BambiNotesChecker", 1337)
+checker = Enochecker("bambi-notes", 1337)
 app = lambda: checker.app
 
 CHARSET = string.ascii_letters + string.digits + "_-"
@@ -252,7 +252,7 @@ async def putflag_test(
     username, password = generate_creds()
     idx = random.randint(1, 9)
     filename = gen_random_str()
-    await db.set("flag_info", username, password, idx, filename)
+    await db.set("flag_info", (username, password, idx, filename))
     
     async with BambiNoteClient(task) as client:
         await client.register(username, password)
