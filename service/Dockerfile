@@ -10,6 +10,7 @@ WORKDIR /service
 COPY ./bambi-notes bambi-notes
 
 RUN mkdir /service/data
+RUN chown author:author /service/data
 
 RUN service xinetd reload 
 

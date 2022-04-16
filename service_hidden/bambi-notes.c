@@ -46,7 +46,9 @@ void sanitize_string(char * input) {
                 input[offset] = 0;
                 // break? -- Maybe there are a few more options for exploits if it breaks here ...
             }
+            filter_offset++;
         }
+        offset++;
     }
 }
 
