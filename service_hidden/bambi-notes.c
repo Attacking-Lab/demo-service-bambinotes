@@ -137,8 +137,12 @@ struct User* user_login() {
         "Username:\n> "
     );
     char username[40];
-    fgets(username, 40, stdin);
-    
+    if (!fgets(username, 40, stdin)) {
+        perror("Failed to read username");
+        exit(EXIT_FAILURE);
+    }
+    sanitize_string(username);
+
     char path_buf[sizeof(username) + sizeof(STORAGE_DIR) + 0x20];
     snprintf(path_buf, sizeof(path_buf), STORAGE_DIR, username, "passwd");
     int access_result = access(path_buf, F_OK | R_OK);
