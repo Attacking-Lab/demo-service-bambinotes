@@ -49,7 +49,7 @@ class BambiNoteClient():
         try:
             self.reader, self.writer = await asyncio.open_connection(BaseCheckerTaskMessage) 
         except:
-            OfflineException("Failed to establish a service connection!")
+            raise OfflineException("Failed to establish a service connection!")
 
         await self.reader.readuntil(BANNER)
         return self
