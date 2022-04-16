@@ -87,9 +87,9 @@ class BambiNoteClient():
 
     async def write(self, data: bytes):
         self.debug_log(f"<<<\n{data}")
-        await self.writer.write(data)
+        self.writer.write(data)
         await self.writer.drain()
-
+        
     async def register(self, username, password):
         if self.state != BambiNoteClient.UNAUTHENTICATED:
             raise InternalErrorException("We're already authenticated")
@@ -98,15 +98,12 @@ class BambiNoteClient():
         
         await self.write(b"1\n")
         
-
         await self.readuntil(b"Username:\n> ")
         await self.write(username.encode() + b"\n")
         
-
         await self.readuntil(b"Password:\n> ")
         await self.write(password.encode() + b"\n")
         
-
         await self.readuntil(b"Registration successful!\n")
         self.state = (username, password)
     
@@ -118,17 +115,14 @@ class BambiNoteClient():
         await self.readuntil(b"> ")
         await self.write(b"2\n")
         
-
         line = await self.readuntil(b"> ")
         assert_in(line, b"Username:\n", "Login Failed!")
         await self.write(username.encode() + b"\n")
         
-
         line = await self.readuntil(b"> ")
         assert_in(line, b"Password:\n", "Login Failed!")
         await self.write(password.encode() + b"\n")
         
-
         line = await self.readline()
         assert_in(line, b"Login successful!", "Login Failed!")
         self.state = (username, password)
@@ -140,12 +134,10 @@ class BambiNoteClient():
         prompt = await self.readuntil(b"> ")
         await self.write(b"1\n")
         
-
         prompt = await self.readuntil(b"> ")
         assert_equals(prompt, b"Which slot to save the note into?\n> ", "Failed to create a new note")
         await self.write(f"{idx}\n".encode())
-        
-        
+                
         prompt = await self.readline()
         assert_equals(prompt, f"Note [{idx}]\n".encode(), "Failed to create a new note")
         prompt = await self.reader.readexactly(2)
@@ -153,7 +145,6 @@ class BambiNoteClient():
 
         await self.write(note_data + b"\n")
         
-
         line = await self.readline()
         assert_equals(line, b"Note Created!\n", "Failed to create a new note")
 
@@ -166,7 +157,6 @@ class BambiNoteClient():
         prompt = await self.readuntil(b"> ")
         await self.write(b"3\n")
         
-
         await self.readuntil(f"\n\n===== [{self.state[0]}'s Notes] =====\n".encode())
         
         line = await self.readline()
@@ -207,7 +197,6 @@ class BambiNoteClient():
         prompt = await self.readuntil(b"> ")
         await self.write(b"4\n")
         
-
         prompt = await self.readuntil(b"> ")
         assert_equals(prompt, b"<Idx> of Note to delete?\n> ", "Failed to delete Note!")
 
@@ -223,36 +212,30 @@ class BambiNoteClient():
         prompt = await self.readuntil(b"> ")
         await self.write(b"5\n")
         
-
         prompt = await self.readuntil(b"> ")
         assert_equals(prompt, b"Which note to load?\nFilename > ", "Failed to delete Note!")
         await self.write(f"{filename}\n".encode())
         
-
         prompt = self.readuntil(b"> ")
         assert_equals(prompt, b"Which slot should it be stored in?\n> ")
         await self.write(f"{filename}\n".encode())
         
-
     async def save_note(self, idx: int, filename: str):
         self.assert_authenticated()
 
         prompt = await self.readuntil(b"> ")
         await self.write(b"6\n")
         
-
         prompt = await self.readuntil(b"> ")
         assert_equals( prompt, b"Which note to save?\n> ", "Failed to save Note!")
         await self.write(f"{idx}\n".encode())
         
-
         line = await self.readline()
         assert_equals(line, b"Which file to save into?\n", "Failed to save Note!")
         prompt = await self.readuntil("> ")
         assert_equals(prompt, b"Filename > ", "Failed to save Note!")
         await self.write(f"{filename}\n".encode())
         
-
         line = self.readline()
         assert_equals(line, b"Note saved!\n", "Failed to save Note!")
 
