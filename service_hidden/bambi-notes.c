@@ -123,12 +123,12 @@ struct User* user_register() {
     };
     close(fd);
 
+    puts("Registration successful!");
+    
     // Successful login
     struct User *user = init_user();
     strcpy(user->username, username);
     return user;
-
-    puts("Registration successful!");
 }
 
 struct User* user_login() {

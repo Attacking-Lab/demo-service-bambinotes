@@ -41,10 +41,11 @@ class BambiNoteClient():
     reader: StreamReader
     writer: StreamWriter
 
-    def __init__(self, task) -> None:
+    def __init__(self, task, logger: Optional[LoggerAdapter] = None) -> None:
         self.state = self.UNAUTHENTICATED
         self.task = task
-        
+        self.logger = logger
+
     async def __aenter__(self):
         try:
             self.reader, self.writer = await asyncio.open_connection(self.task.address, SERVICE_PORT) 
@@ -65,8 +66,19 @@ class BambiNoteClient():
     async def check_prompt(self):
         pass
     
-    async def readuntil(self, *args, **kwargs):
-        return await self.reader.readuntil(*args, **kwargs)
+    async def debug_log(self, *args, **kwargs):
+        if self.logger is not None:
+            self.logger.debug(*args, **kwargs)
+
+    async def readuntil(self, separator=b'\n', *args, **kwargs):
+        self.debug_log(f"reading until {separator}")
+        try:
+            result = await self.reader.readuntil(*args, **kwargs)
+        except Exception as e:
+            self.debug_log(f"Failed client readuntil: {e}")
+
+        self.debug_log(f">>>\n {result}")
+        return result
 
     async def register(self, username, password):
         if self.state != BambiNoteClient.UNAUTHENTICATED:
@@ -257,7 +269,7 @@ async def putflag_test(
     filename = gen_random_str()
     await db.set("flag_info", (username, password, idx, filename))
     
-    async with BambiNoteClient(task) as client:
+    async with BambiNoteClient(task, logger) as client:
         await client.register(username, password)
         await client.create_note(idx, task.flag)
         await client.save_note(idx, filename)
@@ -266,7 +278,7 @@ async def putflag_test(
 
 @checker.getflag(0)
 async def getflag_test(
-    task: GetflagCheckerTaskMessage, sock: AsyncSocket, db: ChainDB
+    task: GetflagCheckerTaskMessage, db: ChainDB, logger: LoggerAdapter
 ) -> None:
     try:
         username, password, _, filename = await db.get("flag_info")
@@ -274,7 +286,7 @@ async def getflag_test(
         raise MumbleException("Missing database entry from putflag")
 
     idx = random.randint(1,9)
-    async with BambiNoteClient(task) as client:
+    async with BambiNoteClient(task, logger) as client:
         await client.login(username, password)
         await client.load_note(filename, idx)
 
