@@ -98,7 +98,7 @@ class BambiNoteClient():
         self.writer.write(password.encode() + b"\n")
         await self.writer.drain()
 
-        await self.readuntil(b"Registration successful\n")
+        await self.readuntil(b"Registration successful!\n")
         self.state = (username, password)
     
     
