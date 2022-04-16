@@ -41,12 +41,10 @@ class BambiNoteClient():
     reader: StreamReader
     writer: StreamWriter
 
-    def __init__(self, task, logger : LoggerAdapter) -> None:
+    def __init__(self, task, logger : Optional[LoggerAdapter]=None) -> None:
         self.state = self.UNAUTHENTICATED
         self.task = task
         self.logger = logger
-
-        self.logger.debug("hi")
 
     async def __aenter__(self):
         try:
@@ -54,7 +52,7 @@ class BambiNoteClient():
         except:
             raise OfflineException("Failed to establish a service connection!")
 
-        self.logger.debug("Connected!")
+        self.logger.info("Connected!")
         await self.readuntil(BANNER)
         return self
 
@@ -69,7 +67,7 @@ class BambiNoteClient():
     async def check_prompt(self):
         pass
     
-    async def debug_log(self, *args, **kwargs):
+    def debug_log(self, *args, **kwargs):
         if self.logger is not None:
             self.logger.debug(*args, **kwargs)
 
