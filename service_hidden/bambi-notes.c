@@ -221,7 +221,7 @@ void create_note(struct User* user) {
     }
 
     user->notes[idx] = malloc(NOTE_SIZE);
-    printf("Note [%d]\n> ", idx);
+    printf("Note [%ld]\n> ", idx);
     long result = fgets(user->notes[idx], NOTE_SIZE, stdin);
     if (result == 0) {
         exit(EXIT_SUCCESS);
@@ -282,7 +282,7 @@ void delete_note(struct User* user) {
             user->notes[note_idx] = 0;
             puts("Note deleted!");
         } else {
-            printf("Note %d doesn't exist!\n", note_idx);
+            printf("Note %ld doesn't exist!\n", note_idx);
         }
     } else {
         puts("Invalid Idx!");
@@ -329,7 +329,7 @@ void load_note(struct User* user) {
     close(filefd);
 
     user->notes[idx][bytes_read] = 0;
-    printf("Note %s was loaded into Slot %d." NL, path_buf, idx);
+    printf("Note %s was loaded into Slot %ld." NL, path_buf, idx);
 }
 
 void save_note(struct User* user) {
@@ -345,7 +345,7 @@ void save_note(struct User* user) {
     }
 
     if (user->notes[idx]) {
-        printf("Note %d does not exist!\n", idx);
+        printf("Note %ld does not exist!\n", idx);
         return;
     }
 
