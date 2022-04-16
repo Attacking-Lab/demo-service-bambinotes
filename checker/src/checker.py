@@ -181,7 +181,7 @@ class BambiNoteClient():
 
         if line == b"Saved Notes:\n":
             while True:
-                line == await self.readline()
+                line = await self.readline()
                 if line == b"===== [End of Notes] =====\n":
                     return notes
 
