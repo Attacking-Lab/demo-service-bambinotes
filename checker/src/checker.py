@@ -56,7 +56,7 @@ class BambiNoteClient():
 
     async def __aexit__(self, *args):
         self.writer.close()
-        await self.writer.close()
+        await self.writer.wait_closed()
 
     async def assert_authenticated(self):
         if self.state == BambiNoteClient.UNAUTHENTICATED:
