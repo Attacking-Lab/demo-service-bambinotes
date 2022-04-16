@@ -66,7 +66,7 @@ class BambiNoteClient():
         pass
     
     async def readuntil(self, *args, **kwargs):
-        return await self.readuntil(*args, **kwargs)
+        return await self.reader.readuntil(*args, **kwargs)
 
     async def register(self, username, password):
         if self.state != BambiNoteClient.UNAUTHENTICATED:
