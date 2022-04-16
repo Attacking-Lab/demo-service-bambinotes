@@ -82,6 +82,9 @@ class BambiNoteClient():
         self.debug_log(f">>>\n {result}")
         return result
 
+    async def readline(self):
+        return await self.readuntil(b'\n')
+
     async def register(self, username, password):
         if self.state != BambiNoteClient.UNAUTHENTICATED:
             raise InternalErrorException("We're already authenticated")
@@ -121,7 +124,7 @@ class BambiNoteClient():
         self.writer.write(password.encode() + b"\n")
         await self.writer.drain()
 
-        line = await self.reader.readline()
+        line = await self.readline()
         assert_in(line, b"Login successful!", "Login Failed!")
         self.state = (username, password)
 
@@ -138,7 +141,7 @@ class BambiNoteClient():
         self.writer.write(f"{idx}\n".encode())
         await self.writer.drain()
         
-        prompt = await self.reader.readline()
+        prompt = await self.readline()
         assert_equals(prompt, f"Note [{idx}]\n".encode(), "Failed to create a new note")
         prompt = await self.reader.readexactly(2)
         assert_equals(prompt, b"> ", "Failed to create a new note")
@@ -146,7 +149,7 @@ class BambiNoteClient():
         self.writer.write(note_data + b"\n")
         await self.writer.drain()
 
-        line = await self.reader.readline()
+        line = await self.readline()
         assert_equals(line, b"Note Created!\n", "Failed to create a new note")
 
     async def list_notes(self):
@@ -161,10 +164,10 @@ class BambiNoteClient():
 
         await self.readuntil(f"\n\n===== [{self.state[0]}'s Notes] =====\n".encode())
         
-        line = await self.reader.readline()
+        line = await self.readline()
         if line == b"Currently Loaded:\n":
             while True:
-                line = await self.reader.readline()
+                line = await self.readline()
                 
                 if line == b"Saved Notes:\n":
                     break
@@ -183,7 +186,7 @@ class BambiNoteClient():
 
         if line == b"Saved Notes:\n":
             while True:
-                line == await self.reader.readline()
+                line == await self.readline()
                 if line == b"===== [End of Notes] =====\n":
                     return notes
 
@@ -206,7 +209,7 @@ class BambiNoteClient():
         self.writer.write(f"{idx}\n".encode())
         await self.writer.flush()
 
-        line = await self.reader.readline()
+        line = await self.readline()
         assert_equals(line, b"Note deleted\n", "Failed to delete Note!")
 
     async def load_note(self, idx: int, filename: str):
@@ -238,15 +241,14 @@ class BambiNoteClient():
         self.writer.write(f"{idx}\n".encode())
         await self.writer.drain()
 
-        line = await self.reader.readline()
-        #if line == 
+        line = await self.readline()
         assert_equals(line, b"Which file to save into?\n", "Failed to save Note!")
         prompt = await self.readuntil("> ")
-        assert_equals(prompt, b"> ", "Failed to save Note!")
+        assert_equals(prompt, b"Filename > ", "Failed to save Note!")
         self.writer.write(f"{filename}\n".encode())
         await self.writer.drain()
 
-        line = self.reader.readline()
+        line = self.readline()
         assert_equals(line, b"Note saved!\n", "Failed to save Note!")
 
 
