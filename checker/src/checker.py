@@ -116,15 +116,15 @@ class BambiNoteClient():
         await self.write(b"2\n")
         
         line = await self.readuntil(b"> ")
-        assert_in(line, b"Username:\n", "Login Failed!")
+        assert_equals(line, b"Username:\n> ", "Login Failed!")
         await self.write(username.encode() + b"\n")
         
         line = await self.readuntil(b"> ")
-        assert_in(line, b"Password:\n", "Login Failed!")
+        assert_equals(line, b"Password:\n> ", "Login Failed!")
         await self.write(password.encode() + b"\n")
         
         line = await self.readline()
-        assert_in(line, b"Login successful!", "Login Failed!")
+        assert_equals(line, b"Login successful!\n", "Login Failed!")
         self.state = (username, password)
 
     async def create_note(self, idx: int, note_data: bytes):
