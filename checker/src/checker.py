@@ -11,8 +11,11 @@ from enochecker3 import (
     Enochecker,
     FlagSearcher,
     BaseCheckerTaskMessage,
+    PutflagCheckerTaskMessage,
     GetflagCheckerTaskMessage,
+    PutnoiseCheckerTaskMessage,
     GetnoiseCheckerTaskMessage,
+    HavocCheckerTaskMessage,
     MumbleException,
     OfflineException,
     InternalErrorException,
@@ -280,11 +283,11 @@ async def getflag_test(
         
 
 @checker.putnoise(0)
-async def putnoise0(task: GetnoiseCheckerTaskMessage):
+async def putnoise0(task: PutnoiseCheckerTaskMessage):
     pass
 
 @checker.putnoise(1)
-async def putnoise1(task: GetnoiseCheckerTaskMessage):
+async def putnoise1(task: PutnoiseCheckerTaskMessage):
     pass
 
 @checker.getnoise(0)
@@ -296,15 +299,15 @@ async def getnoise1(task: GetnoiseCheckerTaskMessage):
     pass
 
 @checker.havoc(0)
-async def havoc0(task: GetnoiseCheckerTaskMessage):
+async def havoc0(task: HavocCheckerTaskMessage):
     pass
 
 @checker.havoc(1)
-async def havoc1(task: GetnoiseCheckerTaskMessage):
+async def havoc1(task: HavocCheckerTaskMessage):
     pass
 
 @checker.havoc(2)
-async def havoc2(task: GetnoiseCheckerTaskMessage):
+async def havoc2(task: HavocCheckerTaskMessage):
     pass
 
 
