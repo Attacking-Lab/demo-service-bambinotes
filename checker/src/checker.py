@@ -172,7 +172,7 @@ class BambiNoteClient():
                 
                 assert_equals(line[:4], b"    ", "Failed to list Notes!")
                 assert_equals(line[-1], 0xa,     "Failed to list Notes!")
-                idx, text = (line[4:-1].split(" | ", maxsplit=1))
+                idx, text = (line[4:-1].split(b" | ", maxsplit=1))
                 
                 try:
                     notes[int(idx)] = text
