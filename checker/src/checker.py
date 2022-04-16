@@ -124,7 +124,7 @@ class BambiNoteClient():
         assert_in(line, b"Login successful!", "Login Failed!")
         self.state = (username, password)
 
-    async def create_note(self, idx, note_data):
+    async def create_note(self, idx: int, note_data: bytes):
         if self.state == BambiNoteClient.UNAUTHENTICATED:
             raise InternalErrorException("Trying invoke authenticated method in unauthenticated context")
         
@@ -208,7 +208,7 @@ class BambiNoteClient():
         line = await self.reader.readline()
         assert_equals(line, b"Note deleted\n", "Failed to delete Note!")
 
-    async def load_note(self, idx, filename):
+    async def load_note(self, idx: int, filename: str):
         self.assert_authenticated()
         
         prompt = await self.readuntil(b"> ")
@@ -225,7 +225,7 @@ class BambiNoteClient():
         self.writer.write(f"{filename}\n".encode())
         await self.writer.drain()
 
-    async def save_note(self, idx, filename):
+    async def save_note(self, idx: int, filename: str):
         self.assert_authenticated()
 
         prompt = await self.readuntil(b"> ")
@@ -273,7 +273,7 @@ async def putflag_test(
     
     async with BambiNoteClient(task, logger) as client:
         await client.register(username, password)
-        await client.create_note(idx, task.flag)
+        await client.create_note(idx, task.flag.encode())
         await client.save_note(idx, filename)
 
     return username
@@ -294,7 +294,7 @@ async def getflag_test(
 
         note_list = await client.list_notes()
         try:
-            assert note_list[idx] == task.flag
+            assert note_list[idx] == task.flag.enocde()
         except:
             MumbleException("Flag not found!") 
         
