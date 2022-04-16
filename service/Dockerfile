@@ -14,5 +14,5 @@ RUN mkdir /service/data
 RUN service xinetd reload 
 
 RUN touch /var/log/xinetd.log
-ENTRYPOINT tail -f /var/log/xinetd.log
+ENTRYPOINT xinetd && tail -f /var/log/xinetd.log
 
