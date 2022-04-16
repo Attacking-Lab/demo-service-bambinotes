@@ -51,7 +51,7 @@ class BambiNoteClient():
         except:
             raise OfflineException("Failed to establish a service connection!")
 
-        await self.reader.readuntil(BANNER)
+        await self.readuntil(BANNER)
         return self
 
     async def __aexit__(self, *args):
@@ -64,6 +64,9 @@ class BambiNoteClient():
 
     async def check_prompt(self):
         pass
+    
+    async def readuntil(self, *args, **kwargs):
+        return await self.readuntil(*args, **kwargs)
 
     async def register(self, username, password):
         if self.state != BambiNoteClient.UNAUTHENTICATED:
@@ -94,12 +97,12 @@ class BambiNoteClient():
         self.writer.write(b"2\n")
         await self.writer.drain()
 
-        line = await self.reader.readuntil(b"> ")
+        line = await self.readuntil(b"> ")
         assert_in(line, b"Username:\n", "Login Failed!")
         self.writer.write(username.encode() + b"\n")
         await self.writer.drain()
 
-        line = await self.reader.readuntil(b"> ")
+        line = await self.readuntil(b"> ")
         assert_in(line, b"Password:\n", "Login Failed!")
         self.writer.write(password.encode() + b"\n")
         await self.writer.drain()
@@ -112,11 +115,11 @@ class BambiNoteClient():
         if self.state == BambiNoteClient.UNAUTHENTICATED:
             raise InternalErrorException("Trying invoke authenticated method in unauthenticated context")
         
-        prompt = await self.reader.readuntil(b"> ")
+        prompt = await self.readuntil(b"> ")
         self.writer.write(b"1\n")
         await self.writer.drain()
 
-        prompt = await self.reader.readuntil(b"> ")
+        prompt = await self.readuntil(b"> ")
         assert_equals(prompt, b"Which slot to save the note into?\n> ", "Failed to create a new note")
         self.writer.write(f"{idx}\n".encode())
         await self.writer.drain()
@@ -138,11 +141,11 @@ class BambiNoteClient():
         notes = {}
         notes['saved'] = []
 
-        prompt = await self.reader.readuntil(b"> ")
+        prompt = await self.readuntil(b"> ")
         self.writer.write(b"3\n")
         await self.writer.drain()
 
-        await self.reader.readuntil(f"\n\n===== [{self.state[0]}'s Notes] =====\n".encode())
+        await self.readuntil(f"\n\n===== [{self.state[0]}'s Notes] =====\n".encode())
         
         line = await self.reader.readline()
         if line == b"Currently Loaded:\n":
@@ -179,11 +182,11 @@ class BambiNoteClient():
     async def delete_note(self, idx):
         self.assert_authenticated()
         
-        prompt = await self.reader.readuntil(b"> ")
+        prompt = await self.readuntil(b"> ")
         self.writer.write(b"4\n")
         await self.writer.drain()
 
-        prompt = await self.reader.readuntil(b"> ")
+        prompt = await self.readuntil(b"> ")
         assert_equals(prompt, b"<Idx> of Note to delete?\n> ", "Failed to delete Note!")
 
         self.writer.write(f"{idx}\n".encode())
@@ -195,16 +198,16 @@ class BambiNoteClient():
     async def load_note(self, idx, filename):
         self.assert_authenticated()
         
-        prompt = await self.reader.readuntil(b"> ")
+        prompt = await self.readuntil(b"> ")
         self.writer.write(b"5\n")
         await self.writer.drain()
 
-        prompt = await self.reader.readuntil(b"> ")
+        prompt = await self.readuntil(b"> ")
         assert_equals(prompt, b"Which note to load?\nFilename > ", "Failed to delete Note!")
         self.writer.write(f"{filename}\n".encode())
         await self.writer.drain()
 
-        prompt = self.reader.readuntil(b"> ")
+        prompt = self.readuntil(b"> ")
         assert_equals(prompt, b"Which slot should it be stored in?\n> ")
         self.writer.write(f"{filename}\n".encode())
         await self.writer.drain()
@@ -212,11 +215,11 @@ class BambiNoteClient():
     async def save_note(self, idx, filename):
         self.assert_authenticated()
 
-        prompt = await self.reader.readuntil(b"> ")
+        prompt = await self.readuntil(b"> ")
         self.writer.write(b"6\n")
         await self.writer.drain()
 
-        prompt = await self.reader.readuntil("> ")
+        prompt = await self.readuntil("> ")
         assert_equals( prompt, b"Which note to save?\n> ", "Failed to save Note!")
         self.writer.write(f"{idx}\n".encode())
         await self.writer.drain()
@@ -224,7 +227,7 @@ class BambiNoteClient():
         line = await self.reader.readline()
         #if line == 
         assert_equals(line, b"Which file to save into?\n", "Failed to save Note!")
-        prompt = await self.reader.readuntil("> ")
+        prompt = await self.readuntil("> ")
         assert_equals(prompt, b"> ", "Failed to save Note!")
         self.writer.write(f"{filename}\n".encode())
         await self.writer.drain()
