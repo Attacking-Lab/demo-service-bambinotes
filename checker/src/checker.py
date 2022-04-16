@@ -232,7 +232,7 @@ class BambiNoteClient():
         
         line = await self.readline()
         assert_equals(line, b"Which file to save into?\n", "Failed to save Note!")
-        prompt = await self.readuntil("> ")
+        prompt = await self.readuntil(b"> ")
         assert_equals(prompt, b"Filename > ", "Failed to save Note!")
         await self.write(f"{filename}\n".encode())
         
