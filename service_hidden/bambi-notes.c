@@ -250,8 +250,11 @@ void list_saved_notes(struct User* user) {
 
 
     // Dunno impl shell injection here?
-    DIR* dirfd = opendir("");
-    if (dirfd < 0) {
+
+    char path_buf[sizeof(user->username) + sizeof(STORAGE_DIR) + 0x20];
+    snprintf(path_buf, sizeof(path_buf), STORAGE_DIR, user->username, "");
+    DIR* dirfd = opendir(path_buf);
+    if (dirfd <= 0) {
         perror("Failed to open user directory");
         exit(EXIT_FAILURE);
     }
@@ -359,7 +362,7 @@ void save_note(struct User* user) {
     );
 
     char path_buf[sizeof(STORAGE_DIR) + sizeof(user->username) + 0x20];
-    int bytes_written = snprintf(path_buf, sizeof(path_buf), STORAGE_DIR, user->username);
+    int bytes_written = snprintf(path_buf, sizeof(path_buf), STORAGE_DIR, user->username, "");
     if (!fgets(path_buf + bytes_written, sizeof(path_buf) - bytes_written, stdin)) {
         perror("Failed to get filename!");
     }
@@ -395,6 +398,9 @@ int main(int argc, const char * argv[]) {
 
         switch (menu_option)
         {
+        case 0: 
+            return 0;
+
         case 1:
             current_user = user_register();
             break;
@@ -421,6 +427,9 @@ int main(int argc, const char * argv[]) {
 
         switch (menu_option)
         {
+        case 0: 
+            return 0;
+
         case 1:
             create_note(current_user);
             break;
