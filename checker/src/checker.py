@@ -142,11 +142,11 @@ class BambiNoteClient():
         prompt = await self.reader.readexactly(2)
         assert_equals(prompt, b"> ", "Failed to create a new note")
 
-        self.writer.write(note_data)
+        self.writer.write(note_data + b"\n")
         await self.writer.drain()
 
         line = await self.reader.readline()
-        assert_equals(line, b"Note Created!", "Failed to create a new note")
+        assert_equals(line, b"Note Created!\n", "Failed to create a new note")
 
     async def list_notes(self):
         self.assert_authenticated()

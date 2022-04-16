@@ -240,7 +240,7 @@ void list_saved_notes(struct User* user) {
                 printf("Currently Loaded:\n");
                 table_header = 1;
             }
-            printf("    %d | %s", note_idx, user->notes[note_idx]);
+            printf("    %d | %s\n", note_idx, user->notes[note_idx]);
         }
     }
 
