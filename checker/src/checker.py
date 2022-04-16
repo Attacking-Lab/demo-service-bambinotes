@@ -249,9 +249,8 @@ async def putflag_test(
     username, password = generate_creds()
     idx = random.randint(1, 9)
     filename = gen_random_str()
-
-    db["flag_info"] = (username, password, idx, filename)
-
+    await db.set("flag_info", username, password, idx, filename)
+    
     async with BambiNoteClient(task) as client:
         await client.register(username, password)
         await client.create_note(idx, task.flag)
@@ -279,7 +278,6 @@ async def getflag_test(
         except:
             MumbleException("Flag not found!") 
         
-        # await client.save_note(idx, filename)
 
 @checker.putnoise(0)
 async def putnoise0(task: GetnoiseCheckerTaskMessage):
