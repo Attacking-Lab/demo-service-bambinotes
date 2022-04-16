@@ -26,8 +26,8 @@ from enochecker3 import (
 from enochecker3.utils import assert_equals, assert_in
 
 
-SERVICE_PORT = 1337
-checker = Enochecker("bambi-notes", 1337)
+SERVICE_PORT = 8204
+checker = Enochecker("bambi-notes", SERVICE_PORT)
 app = lambda: checker.app
 
 CHARSET = string.ascii_letters + string.digits + "_-"
