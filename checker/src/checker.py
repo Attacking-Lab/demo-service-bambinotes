@@ -41,10 +41,12 @@ class BambiNoteClient():
     reader: StreamReader
     writer: StreamWriter
 
-    def __init__(self, task, logger: Optional[LoggerAdapter] = None) -> None:
+    def __init__(self, task, logger : LoggerAdapter) -> None:
         self.state = self.UNAUTHENTICATED
         self.task = task
         self.logger = logger
+
+        self.logger.debug("hi")
 
     async def __aenter__(self):
         try:
@@ -52,6 +54,7 @@ class BambiNoteClient():
         except:
             raise OfflineException("Failed to establish a service connection!")
 
+        self.logger.debug("Connected!")
         await self.readuntil(BANNER)
         return self
 
@@ -73,7 +76,7 @@ class BambiNoteClient():
     async def readuntil(self, separator=b'\n', *args, **kwargs):
         self.debug_log(f"reading until {separator}")
         try:
-            result = await self.reader.readuntil(*args, **kwargs)
+            result = await self.reader.readuntil(separator, *args, **kwargs)
         except Exception as e:
             self.debug_log(f"Failed client readuntil: {e}")
 
