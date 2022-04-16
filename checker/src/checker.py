@@ -264,6 +264,7 @@ async def putflag_test(
     logger: LoggerAdapter
 ) -> None:
 
+    logger.debug("TESTTEST123!")
     username, password = generate_creds()
     idx = random.randint(1, 9)
     filename = gen_random_str()
