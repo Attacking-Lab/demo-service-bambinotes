@@ -233,7 +233,7 @@ class BambiNoteClient():
         self.writer.write(b"6\n")
         await self.writer.drain()
 
-        prompt = await self.readuntil("> ")
+        prompt = await self.readuntil(b"> ")
         assert_equals( prompt, b"Which note to save?\n> ", "Failed to save Note!")
         self.writer.write(f"{idx}\n".encode())
         await self.writer.drain()
