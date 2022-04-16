@@ -49,6 +49,7 @@ class BambiNoteClient():
             OfflineException("Failed to establish a service connection!")
 
         await self.reader.readuntil(BANNER)
+        return self
 
     async def __aexit__(self, *args):
         self.writer.close()
@@ -251,7 +252,7 @@ async def putflag_test(
 
     db["flag_info"] = (username, password, idx, filename)
 
-    with BambiNoteClient(task) as client:
+    async with BambiNoteClient(task) as client:
         await client.register(username, password)
         await client.create_note(idx, task.flag)
         await client.save_note(idx, filename)
@@ -263,14 +264,22 @@ async def getflag_test(
     task: GetflagCheckerTaskMessage, sock: AsyncSocket, db: ChainDB
 ) -> None:
     try:
-        (username, password, idx, filename) = await db.get("flag_info")
+        username, password, _, filename = await db.get("flag_info")
     except KeyError:
         raise MumbleException("Missing database entry from putflag")
 
-    with BambiNoteClient(task) as client:
+    idx = random.randint(1,9)
+    async with BambiNoteClient(task) as client:
         await client.login(username, password)
-        # await client.list_saved_notes()
-        await client.save_note(idx, filename)
+        await client.load_note(filename, idx)
+
+        note_list = await client.list_notes()
+        try:
+            assert note_list[idx] == task.flag
+        except:
+            MumbleException("Flag not found!") 
+        
+        # await client.save_note(idx, filename)
 
 @checker.putnoise(0)
 async def putnoise0(task: GetnoiseCheckerTaskMessage):
