@@ -1,6 +1,8 @@
 from asyncio import StreamReader, StreamWriter
 import asyncio
-import secrets
+import random
+import string
+
 from typing import Optional
 from logging import LoggerAdapter
 
@@ -10,6 +12,7 @@ from enochecker3 import (
     FlagSearcher,
     BaseCheckerTaskMessage,
     GetflagCheckerTaskMessage,
+    GetnoiseCheckerTaskMessage,
     MumbleException,
     OfflineException,
     InternalErrorException,
@@ -21,15 +24,10 @@ from enochecker3.utils import assert_equals, assert_in
 
 
 SERVICE_PORT = 1337
-checker = Enochecker("ExampleChecker", 1337)
+checker = Enochecker("BambiNotesChecker", 1337)
 app = lambda: checker.app
 
-# from session import Session
-# @checker.register_dependency
-# def _get_session(socket: AsyncSocket, logger: LoggerAdapter) -> Session:
-#     return Session(socket, logger)
-
-
+CHARSET = string.ascii_letters + string.digits + "_-"
 BANNER = b"Welcome to Bambi-Notes!\n"
 
 class BambiNoteClient():
@@ -52,7 +50,7 @@ class BambiNoteClient():
 
         await self.reader.readuntil(BANNER)
 
-    async def __aexit__(self):
+    async def __aexit__(self, *args):
         self.writer.close()
         await self.writer.close()
 
@@ -230,35 +228,78 @@ class BambiNoteClient():
         line = self.reader.readline()
         assert_equals(line, b"Note saved!\n", "Failed to save Note!")
 
+
+def gen_random_str(k=16):
+    return ''.join(random.choices(CHARSET, k=k))
+
+def generate_creds(exploit_fake=False, namelen=16):
+    # if exploit_fake
+    username = ''.join(random.choices(CHARSET, k=namelen))
+    password = ''.join(random.choices(CHARSET, k=namelen))
+    return (username, password)
+
 @checker.putflag(0)
 async def putflag_test(
     task: PutflagCheckerTaskMessage,
-    sock: AsyncSocket,
     db: ChainDB,
     logger: LoggerAdapter
 ) -> None:
 
-    reader: StreamReader = sock[0]
-    writer: StreamWriter = sock[1]
+    username, password = generate_creds()
+    idx = random.randint(1, 9)
+    filename = gen_random_str()
 
-    writer.write(b"Hallo\n")
-    await writer.drain()
+    db["flag_info"] = (username, password, idx, filename)
 
-    foo = reader.readline()
-    return
+    with BambiNoteClient(task) as client:
+        await client.register(username, password)
+        await client.create_note(idx, task.flag)
+        await client.save_note(idx, filename)
+
+    return username
 
 @checker.getflag(0)
 async def getflag_test(
     task: GetflagCheckerTaskMessage, sock: AsyncSocket, db: ChainDB
 ) -> None:
     try:
-        token = await db.get("token")
+        (username, password, idx, filename) = await db.get("flag_info")
     except KeyError:
         raise MumbleException("Missing database entry from putflag")
 
-    r = await client.get(f"/note/{token}")
-    assert_equals(r.status_code, 200, "getting note with flag failed")
-    assert_in(task.flag, r.text, "flag missing from note")
+    with BambiNoteClient(task) as client:
+        await client.login(username, password)
+        # await client.list_saved_notes()
+        await client.save_note(idx, filename)
+
+@checker.putnoise(0)
+async def putnoise0(task: GetnoiseCheckerTaskMessage):
+    pass
+
+@checker.putnoise(1)
+async def putnoise1(task: GetnoiseCheckerTaskMessage):
+    pass
+
+@checker.getnoise(0)
+async def getnoise0(task: GetnoiseCheckerTaskMessage):
+    pass
+
+@checker.getnoise(1)
+async def getnoise1(task: GetnoiseCheckerTaskMessage):
+    pass
+
+@checker.havoc(0)
+async def havoc0(task: GetnoiseCheckerTaskMessage):
+    pass
+
+@checker.havoc(1)
+async def havoc1(task: GetnoiseCheckerTaskMessage):
+    pass
+
+@checker.havoc(2)
+async def havoc2(task: GetnoiseCheckerTaskMessage):
+    pass
+
 
 
 @checker.exploit(0)

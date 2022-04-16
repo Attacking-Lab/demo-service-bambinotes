@@ -13,6 +13,9 @@
 #define NOTE_SIZE 0x60
 #define DEFAULT_NOTE "Well, it's a note-taking service. What did you expect?"
 
+#define NOTE_COUNT 10
+#define VALID_NOTE_IDX(idx) ((idx >= 0) && (idx < NOTE_COUNT))
+
 void setup() {
     setbuf(stdin, NULL);
     setbuf(stdout, NULL);
@@ -22,12 +25,17 @@ void setup() {
 
 long getlong() {
     char buf[40];
+    char *endp = 0;
     fgets(buf, sizeof(buf), stdin);
-    return strtol(buf, NULL, 0);
+    long retval = strtol(buf, &endp, 0);
+    if (!retval) {
+        if (endp == buf) retval = -1;
+    }
+    return retval;
 }
 
 #define FILTERED_CHARS "./\n"
-void sanitze_string(char * input) {
+void sanitize_string(char * input) {
     size_t offset = 0;
     while (input[offset] != 0)
     {
@@ -44,8 +52,7 @@ void sanitze_string(char * input) {
 
 struct User {
     char username[40];
-    char * notes[10];
-    char in_use[10];
+    char *notes[NOTE_COUNT];
 };
 
 struct User* init_user() {
@@ -54,13 +61,14 @@ struct User* init_user() {
 
     struct User *user_ptr = calloc(1, sizeof(struct User));
     user_ptr->notes[0] = base_note;
-    user_ptr->in_use[0] = 1;
+    return user_ptr;
 }
 
 void delete_user(struct User *user) {
-    for (int note_idx = 10; note_idx >= 0; note_idx-- ) {
-        if (user->in_use[note_idx]) {
+    for (int note_idx = NOTE_COUNT-1; note_idx >= 0; note_idx-- ) {
+        if (user->notes[note_idx]) {
             free(user->notes[note_idx]);
+            user->notes[note_idx] = 0;
         }
     }
     free(user);
@@ -76,7 +84,7 @@ struct User* user_register() {
         perror("Failed to read username");
         exit(EXIT_FAILURE);
     }
-    sanitze_string(username);
+    sanitize_string(username);
 
     char path_buf[sizeof(username) + sizeof(STORAGE_DIR) + 0x20];
     snprintf(path_buf, sizeof(path_buf), STORAGE_DIR, username, "passwd");
@@ -107,7 +115,10 @@ struct User* user_register() {
         exit(EXIT_FAILURE);
     }
 
-    write(fd, password, strlen(password));
+    if (0 > write(fd, password, strlen(password))) {
+        perror("Failed to write passwd file!");
+        exit(EXIT_FAILURE);
+    };
     close(fd);
 
     // Successful login
@@ -142,9 +153,13 @@ struct User* user_login() {
     }
     
     int bytes_read = read(password_fd, password_buf, sizeof(password_buf) -1 );
-    close(password_fd);
+    if (bytes_read < 0) {
+        perror("Failed to read passwd file!");
+        exit(EXIT_FAILURE);
+    }
 
     password_buf[bytes_read] = 0;
+    close(password_fd);
 
     printf(
         "Password:\n> "
@@ -194,8 +209,13 @@ void create_note(struct User* user) {
         "> "
     );
     long idx = getlong();
-    if (user->in_use[idx]) {
+    if (!VALID_NOTE_IDX(idx)) {
+        puts("Nice Try!");
+        return;
+    }
+    if (user->notes[idx]) {
         puts("Already Occupied!");
+        return;
     }
 
     user->notes[idx] = malloc(NOTE_SIZE);
@@ -212,8 +232,8 @@ void list_saved_notes(struct User* user) {
     printf("\n\n===== [%s's Notes] =====\n", user->username);
 
     char table_header = 0;
-    for (int note_idx = 0; note_idx < 10; note_idx++) {
-        if (user->in_use[note_idx]) {
+    for (int note_idx = 0; note_idx < NOTE_COUNT; note_idx++) {
+        if (user->notes[note_idx]) {
             if (!table_header) {
                 printf("Currently Loaded:\n");
                 table_header = 1;
@@ -254,13 +274,13 @@ void delete_note(struct User* user) {
     printf("<Idx> of Note to delete?\n> ");
     
     long note_idx = getlong();
-    if ((note_idx >= 0) && (note_idx < 10)) {
-        if (user->in_use[note_idx]) {
-            user->in_use[note_idx] = 0;
+    if (VALID_NOTE_IDX(note_idx)) {
+        if (user->notes[note_idx]) {
+            free(user->notes[note_idx]);
+            user->notes[note_idx] = 0;
             puts("Note deleted!");
         } else {
             printf("Note %d doesn't exist!\n", note_idx);
-            // Maybe actually free the given val?
         }
     } else {
         puts("Invalid Idx!");
@@ -274,11 +294,13 @@ void load_note(struct User* user) {
     );
     
     char path_buf[sizeof(STORAGE_DIR) + sizeof(user->username) + 0x20];
-    int bytes_written = snprintf(path_buf, sizeof(path_buf), STORAGE_DIR, user->username);
+    int bytes_written = snprintf(path_buf, sizeof(path_buf), STORAGE_DIR, user->username, "");
     if (!fgets(path_buf + bytes_written, sizeof(path_buf) - bytes_written, stdin)) {
         perror("Failed to get filename!");
+        return;
     }
-    sanitze_string(path_buf + bytes_written);
+
+    sanitize_string(path_buf + bytes_written);
 
     printf(
         "Which slot should it be stored in?" NL
@@ -286,7 +308,7 @@ void load_note(struct User* user) {
     );
 
     long idx = getlong();
-    if ((idx <0) || (idx > 10)) {
+    if (!VALID_NOTE_IDX(idx)) {
         puts("Invalid Idx!");
         return;
     } 
@@ -315,12 +337,12 @@ void save_note(struct User* user) {
     );
     
     long idx = getlong();
-    if ((idx <0) || (idx > 10)) {
+    if (!VALID_NOTE_IDX(idx)) {
         puts("Invalid Idx!");
         return;
     }
 
-    if (user->in_use[idx]) {
+    if (user->notes[idx]) {
         printf("Note %d does not exist!\n", idx);
         return;
     }
@@ -335,10 +357,10 @@ void save_note(struct User* user) {
     if (!fgets(path_buf + bytes_written, sizeof(path_buf) - bytes_written, stdin)) {
         perror("Failed to get filename!");
     }
-    sanitze_string(path_buf + bytes_written);
+    sanitize_string(path_buf + bytes_written);
     
     // TODO: Sanitize path
-    long filefd = open(path_buf, O_WRONLY | O_CREAT, 0644);
+    long filefd = open(path_buf, O_WRONLY | O_CREAT | O_EXCL, 0644);
     if (filefd < 0) {
         perror("Failed to open file!");
         exit(EXIT_FAILURE);
@@ -376,6 +398,7 @@ int main(int argc, const char * argv[]) {
             break;
         
         case 1337:
+            puts("Nice Try!\nYeah this isn't going to do anything");
             break;
 
         default:
