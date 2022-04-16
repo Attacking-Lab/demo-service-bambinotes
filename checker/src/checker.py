@@ -216,7 +216,7 @@ class BambiNoteClient():
         assert_equals(prompt, b"Which note to load?\nFilename > ", "Failed to delete Note!")
         await self.write(f"{filename}\n".encode())
         
-        prompt = self.readuntil(b"> ")
+        prompt = await self.readuntil(b"> ")
         assert_equals(prompt, b"Which slot should it be stored in?\n> ")
         await self.write(f"{filename}\n".encode())
         
@@ -236,7 +236,7 @@ class BambiNoteClient():
         assert_equals(prompt, b"Filename > ", "Failed to save Note!")
         await self.write(f"{filename}\n".encode())
         
-        line = self.readline()
+        line = await self.readline()
         assert_equals(line, b"Note saved!\n", "Failed to save Note!")
 
 
