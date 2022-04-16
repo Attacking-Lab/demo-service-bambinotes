@@ -348,7 +348,7 @@ void save_note(struct User* user) {
         return;
     }
 
-    if (user->notes[idx]) {
+    if (!user->notes[idx]) {
         printf("Note %ld does not exist!\n", idx);
         return;
     }
