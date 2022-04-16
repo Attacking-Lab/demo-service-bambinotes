@@ -77,6 +77,7 @@ class BambiNoteClient():
             result = await self.reader.readuntil(separator, *args, **kwargs)
         except Exception as e:
             self.debug_log(f"Failed client readuntil: {e}")
+            raise
 
         self.debug_log(f">>>\n {result}")
         return result
