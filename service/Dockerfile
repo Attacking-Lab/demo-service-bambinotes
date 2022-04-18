@@ -7,13 +7,12 @@ RUN useradd author
 COPY xinetd.conf /etc/xinetd.conf
 
 WORKDIR /service
-COPY ./bambi-notes bambi-notes
+COPY ./bambi-notes ./bambi-notes
+COPY ./entrypoint.sh ./entrypoint.sh
 
 RUN mkdir /service/data
 RUN chown author:author /service/data
 
-RUN service xinetd reload 
-
 RUN touch /var/log/xinetd.log
-ENTRYPOINT xinetd && chown author:author /service/data && tail -f /var/log/xinetd.log
+ENTRYPOINT bash entrypoint.sh
 
