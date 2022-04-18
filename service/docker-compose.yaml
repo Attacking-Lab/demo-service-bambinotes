@@ -4,6 +4,6 @@ services:
   bambi-notes:
     build: .
     volumes:
-      - ./data/:/data:rw
+      - ./data/:/service/data:rw
     ports:
       - 8204:8204

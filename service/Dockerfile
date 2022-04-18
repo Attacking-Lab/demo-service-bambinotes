@@ -15,5 +15,5 @@ RUN chown author:author /service/data
 RUN service xinetd reload 
 
 RUN touch /var/log/xinetd.log
-ENTRYPOINT xinetd && tail -f /var/log/xinetd.log
+ENTRYPOINT xinetd && chown author:author /service/data && tail -f /var/log/xinetd.log
 

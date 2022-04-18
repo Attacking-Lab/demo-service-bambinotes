@@ -8,7 +8,7 @@
 #include <sys/stat.h>
 
 #define NL "\n"
-#define STORAGE_DIR "./data/%s/%s"
+#define STORAGE_DIR "/service/data/%s/%s"
 
 #define NOTE_SIZE 0x60
 #define DEFAULT_NOTE "Well, it's a note-taking service. What did you expect?"
