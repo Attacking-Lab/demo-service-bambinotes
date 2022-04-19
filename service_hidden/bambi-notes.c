@@ -322,6 +322,10 @@ void load_note(struct User* user) {
         return;
     } 
 
+    if (user->notes[idx] == 0) {
+        user->notes[idx] = calloc(1, NOTE_SIZE);
+    }
+
     int filefd = open(path_buf, O_RDONLY);
     if (filefd < 0) {
         printf("Failed to open %s" NL, path_buf);

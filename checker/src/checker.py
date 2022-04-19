@@ -288,7 +288,7 @@ async def getflag_test(
         try:
             assert note_list[idx] == task.flag.enocde()
         except:
-            MumbleException("Flag not found!") 
+            raise MumbleException("Flag not found!") 
         
 
 @checker.putnoise(0)
