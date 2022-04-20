@@ -2,6 +2,7 @@ from asyncio import StreamReader, StreamWriter
 import asyncio
 import random
 import string
+import faker
 
 from typing import Optional
 from logging import LoggerAdapter
@@ -40,6 +41,14 @@ app = lambda: checker.app
 
 CHARSET = string.ascii_letters + string.digits + "_-"
 BANNER = b"Welcome to Bambi-Notes!\n"
+FAKER = faker.Faker(faker.config.AVAILABLE_LOCALES)
+
+def gen_rando_bs(max_len = 0x20):
+    if random.getrandbits(1):
+        rando_str = FAKER.bs()
+    else:
+        rando_str = FAKER.catch_phrase()
+    return rando_str.encode()[:max_len]
 
 class BambiNoteClient():
     UNAUTHENTICATED = 0
@@ -234,14 +243,15 @@ class BambiNoteClient():
         prompt = await self.readuntil(b"> ")
         await self.write(b"4\n")
         
+        line = await self.readline()
+        assert_equals(line, b"<Idx> of Note to delete?\n", "Failed to delete Note!")
         prompt = await self.readuntil(b"> ")
-        assert_equals(prompt, b"<Idx> of Note to delete?\n> ", "Failed to delete Note!")
+        assert_equals(prompt, b"> ", "Failed to delete Note!")
 
         await self.write(f"{idx}\n".encode())
-        await self.writer.flush()
 
         line = await self.readline()
-        assert_equals(line, b"Note deleted\n", "Failed to delete Note!")
+        assert_equals(line, b"Note deleted!\n", "Failed to delete Note!")
 
     async def load_note(self, idx: int, filename: str):
         self.assert_authenticated()
@@ -328,21 +338,90 @@ async def getflag_test(
         
 
 @checker.putnoise(0)
-async def putnoise0(task: PutnoiseCheckerTaskMessage, logger: LoggerAdapter):
-    
-    pass
+async def putnoise0(task: PutnoiseCheckerTaskMessage, db: ChainDB, logger: LoggerAdapter):
+    (username, password) = generate_creds()
+    idx = random.randint(0,9)
+    note = gen_rando_bs(max_len=0x38)
+    filename = gen_random_str()
 
-@checker.putnoise(1)
-async def putnoise1(task: PutnoiseCheckerTaskMessage, logger: LoggerAdapter):
-    pass
+    await db.set('noise_info', (username, password, note, filename))
+    async with BambiNoteClient(task, logger) as client:
+        await client.register(username, password)
+
+        if random.getrandbits(1):
+            await client.list_notes()
+
+        low_bound = 1
+        if random.getrandbits(1):
+            await client.delete_note(0)
+            low_bound = 0
+            if random.getrandbits(1):
+                await client.list_notes()
+
+            
+        random_idx = random.randint(low_bound,9)
+        await client.create_note(random_idx, note)
+        
+        if random.getrandbits(1):
+            notes = await client.list_notes()
+            assert_equals(note, notes[random_idx], "Note not in list!")
+        
+        await client.save_note(random_idx, filename)
+        
+
+# @checker.putnoise(1)
+# async def putnoise1(task: PutnoiseCheckerTaskMessage, logger: LoggerAdapter):
+#     (username, password) = generate_creds()
+#     idx = random.randint(0,9)
+#     note = gen_rando_bs(max_len=0x38)
+#     filename = gen_random_str()
+
+#     await db.set('noise_info', (username, password, note, filename))
+#     async with BambiNoteClient(task, logger) as client:
+#         if random.getrandbits(1):
+#             await client.list_notes()
+
+#         if random.getrandbits(1):
+#             await client.delete_note(0)
+#             if random.getrandbits(1):
+#                 await client.list_notes()
+            
+#         random_idx = random.randint(0,9)
+#         await client.create_note(random_idx, note)
+        
+#         if random.getrandbits(1):
+#             notes = await client.list_notes()
+#             assert_equals(note, notes[random_idx], "Note not in list!")
+        
+#         await client.save_note(random_idx, filename)
 
 @checker.getnoise(0)
-async def getnoise0(task: GetnoiseCheckerTaskMessage, logger: LoggerAdapter):
-    pass
+async def getnoise0(task: GetnoiseCheckerTaskMessage, db: ChainDB, logger: LoggerAdapter):
+    try:
+        (username, password, note, filename) = await db.get('noise_info')
+    except:
+        raise MumbleException("Putnoise Failed") 
 
-@checker.getnoise(1)
-async def getnoise1(task: GetnoiseCheckerTaskMessage, logger: LoggerAdapter):
-    pass
+    random_idx = random.randint(0,9)
+    async with BambiNoteClient(task, logger) as client:
+        await client.login(username, password)
+        
+        if random.getrandbits(1):
+            note_list = await client.list_notes()
+            if filename not in note_list["saved"]:
+                raise MumbleException("Failed to find note on disk!")
+
+        await client.load_note(random_idx, filename)
+        notes = await client.list_notes()
+        assert_equals(note, notes[random_idx], "Note not in list!")
+        
+        if random.getrandbits(1):
+            await client.delete_note(random_idx)
+
+
+# @checker.getnoise(1)
+# async def getnoise1(task: GetnoiseCheckerTaskMessage, logger: LoggerAdapter):
+#     pass
 
 ## Fail Login repeatedly
 @checker.havoc(0)
