@@ -148,7 +148,7 @@ struct User* user_login() {
     int access_result = access(path_buf, F_OK | R_OK);
     
     if ( access_result < 0 ) {
-        printf("User %s does not exist!", username);
+        printf("User %s does not exist!\n", username);
         return 0;
     }
     
@@ -419,7 +419,8 @@ int main(int argc, const char * argv[]) {
         case 1337:
             puts("Nice Try!\nYeah this isn't going to do anything");
             break;
-
+        case -1:
+            return 0;
         default:
             break;
         }
@@ -455,7 +456,8 @@ int main(int argc, const char * argv[]) {
         case 6:
             save_note(current_user);
             break;
-            
+        case -1:
+            return 0;
         default:
             break;
         }

