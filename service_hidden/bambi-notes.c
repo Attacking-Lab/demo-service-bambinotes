@@ -227,6 +227,9 @@ void create_note(struct User* user) {
     user->notes[idx] = malloc(NOTE_SIZE);
     printf("Note [%ld]\n> ", idx);
     long result = fgets(user->notes[idx], NOTE_SIZE, stdin);
+    int len = strlen(user->notes[idx]);
+    if (user->notes[idx][len-1] == '\n') user->notes[idx][len-1] = 0;
+
     if (result == 0) {
         exit(EXIT_SUCCESS);
     }

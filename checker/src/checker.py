@@ -251,7 +251,7 @@ class BambiNoteClient():
         
         prompt = await self.readuntil(b"> ")
         assert_equals(prompt, b"Which slot should it be stored in?\n> ")
-        await self.write(f"{filename}\n".encode())
+        await self.write(f"{idx}\n".encode())
         
     async def save_note(self, idx: int, filename: str):
         self.assert_authenticated()
@@ -314,7 +314,7 @@ async def getflag_test(
     idx = random.randint(1,9)
     async with BambiNoteClient(task, logger) as client:
         await client.login(username, password)
-        await client.load_note(filename, idx)
+        await client.load_note(idx, filename)
 
         note_list = await client.list_notes()
         try:

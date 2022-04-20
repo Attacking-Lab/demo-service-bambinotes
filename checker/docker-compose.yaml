@@ -24,8 +24,8 @@ services:
   # The python checkerlib requires a mongo db!
   bambinotes-mongo:
     image: mongo
-    ports:
-      - 27017:27017
+    #ports:
+    #  - 27017:27017
     volumes:
       - ./data:/data/db
     environment:
