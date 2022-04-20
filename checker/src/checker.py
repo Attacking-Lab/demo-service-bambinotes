@@ -214,6 +214,7 @@ class BambiNoteClient():
                     break
 
                 if line == b"===== [End of Notes] =====\n":
+                    self.logger.info(f"Note list: {notes}")
                     return notes
                 
                 assert_equals(line[:4], b"    ", "Failed to list Notes!")
@@ -229,12 +230,14 @@ class BambiNoteClient():
             while True:
                 line = await self.readline()
                 if line == b"===== [End of Notes] =====\n":
+                    self.logger.info(f"Note list: {notes}")
                     return notes
 
                 assert_equals(line[:3], b" | ", "Failed to list Notes!")
                 filename = line[3:-1]
                 notes['saved'].append(filename)
-                
+        
+        self.logger.info(f"Note list: {notes}")
         return notes
 
     async def delete_note(self, idx):
@@ -408,7 +411,7 @@ async def getnoise0(task: GetnoiseCheckerTaskMessage, db: ChainDB, logger: Logge
         
         if random.getrandbits(1):
             note_list = await client.list_notes()
-            if filename not in note_list["saved"]:
+            if filename.encode() not in note_list["saved"]:
                 raise MumbleException("Failed to find note on disk!")
 
         await client.load_note(random_idx, filename)
