@@ -26,6 +26,13 @@ from enochecker3 import (
 
 from enochecker3.utils import assert_equals, assert_in
 
+class UserExistsException(MumbleException):
+    def __init__(self):
+        super().__init__("Registration Failed!")
+
+class InvalidCredentialsException(MumbleException):
+    def __init__(self):
+        super().__init__("Login Failed!")
 
 SERVICE_PORT = 8204
 checker = Enochecker("bambi-notes", SERVICE_PORT)
@@ -90,7 +97,30 @@ class BambiNoteClient():
         self.debug_log(f"<<<\n{data}")
         self.writer.write(data)
         await self.writer.drain()
-        
+    
+    async def read_menu(self):
+        if self.state == BambiNoteClient.UNAUTHENTICATED:
+            try:
+                await self.readuntil( b"===== [Unauthenticated] =====\n" )
+                assert_equals( await self.readline(), b"   1. Register\n" ) 
+                assert_equals( await self.readline(), b"   2. Login\n" ) 
+
+            except:
+                raise MumbleException("Failed to fetch unauthenticated Menu!")
+
+        else:
+            try:
+                await self.readuntil( f"===== [{self.state[0]}] =====".encode())
+                assert_equals( await self.readline(), b"   1. Create\n" ) 
+                assert_equals( await self.readline(), b"   2. Print\n" ) 
+                assert_equals( await self.readline(), b"   3. List Saved\n" ) 
+                assert_equals( await self.readline(), b"   4. Delete\n" ) 
+                assert_equals( await self.readline(), b"   5. Load\n" ) 
+                assert_equals( await self.readline(), b"   6. Save\n" ) 
+
+            except: 
+                raise MumbleException("Failed to fetch authenticated Menu!")
+
     async def register(self, username, password):
         if self.state != BambiNoteClient.UNAUTHENTICATED:
             raise InternalErrorException("We're already authenticated")
@@ -125,7 +155,9 @@ class BambiNoteClient():
         await self.write(password.encode() + b"\n")
         
         line = await self.readline()
-        assert_equals(line, b"Login successful!\n", "Login Failed!")
+        if line != b"Login successful!\n":
+            raise InvalidCredentialsException()
+
         self.state = (username, password)
 
     async def create_note(self, idx: int, note_data: bytes):
@@ -286,38 +318,57 @@ async def getflag_test(
 
         note_list = await client.list_notes()
         try:
-            assert note_list[idx] == task.flag.enocde()
+            assert note_list[idx] == task.flag.encode()
         except:
             raise MumbleException("Flag not found!") 
         
 
 @checker.putnoise(0)
-async def putnoise0(task: PutnoiseCheckerTaskMessage):
+async def putnoise0(task: PutnoiseCheckerTaskMessage, logger: LoggerAdapter):
+    
     pass
 
 @checker.putnoise(1)
-async def putnoise1(task: PutnoiseCheckerTaskMessage):
+async def putnoise1(task: PutnoiseCheckerTaskMessage, logger: LoggerAdapter):
     pass
 
 @checker.getnoise(0)
-async def getnoise0(task: GetnoiseCheckerTaskMessage):
+async def getnoise0(task: GetnoiseCheckerTaskMessage, logger: LoggerAdapter):
     pass
 
 @checker.getnoise(1)
-async def getnoise1(task: GetnoiseCheckerTaskMessage):
+async def getnoise1(task: GetnoiseCheckerTaskMessage, logger: LoggerAdapter):
     pass
 
+## Fail Login repeatedly
 @checker.havoc(0)
-async def havoc0(task: HavocCheckerTaskMessage):
-    pass
+async def havoc0(task: HavocCheckerTaskMessage, logger: LoggerAdapter):
+    async with BambiNoteClient(task, logger) as client:
+        for i in range(10):
+            username, password = generate_creds()
+            try: 
+                await client.login(username, password) 
+            except InvalidCredentialsException:
+                continue
+            break
 
+## Delete Note
 @checker.havoc(1)
-async def havoc1(task: HavocCheckerTaskMessage):
-    pass
+async def havoc1(task: HavocCheckerTaskMessage, logger: LoggerAdapter):
+    async with BambiNoteClient(task, logger) as client:
+        await client.login()
+        
 
+# 1337
 @checker.havoc(2)
-async def havoc2(task: HavocCheckerTaskMessage):
-    pass
+async def havoc2(task: HavocCheckerTaskMessage, logger: LoggerAdapter):
+    async with BambiNoteClient(task, logger) as client:
+        await client.read_menu()
+        await client.readuntil(b"> ")
+        await client.write(b"1337\n")
+
+        assert_equals(await client.readline(), b"Nice Try!\n", "L33T text not available!")
+        assert_equals(await client.readline(), b"Yeah this isn't going to do anything\n", "L33T text not available!")
 
 @checker.exploit(0)
 async def exploit_test(task: ExploitCheckerTaskMessage, searcher: FlagSearcher, sock: AsyncSocket, logger:LoggerAdapter) -> Optional[str]:
