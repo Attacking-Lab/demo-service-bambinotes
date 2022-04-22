@@ -174,6 +174,7 @@ struct User* user_login() {
     char user_password[40];
     fgets(user_password, 40, stdin);
         
+    sanitize_string(user_password);
     if (strcmp(password_buf, user_password)) {
         puts("Wrong password!");
         return 0;
