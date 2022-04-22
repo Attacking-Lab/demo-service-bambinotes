@@ -117,6 +117,7 @@ struct User* user_register() {
         exit(EXIT_FAILURE);
     }
 
+    sanitize_string(password);
     if (0 > write(fd, password, strlen(password))) {
         perror("Failed to write passwd file!");
         exit(EXIT_FAILURE);
