@@ -20,7 +20,7 @@ void setup() {
     setbuf(stdin, NULL);
     setbuf(stdout, NULL);
     setbuf(stderr, NULL);
-    alarm(30);
+    alarm(120);
 }
 
 long getlong() {
