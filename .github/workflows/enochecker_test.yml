@@ -30,7 +30,7 @@ jobs:
       run: |
         cd service
         ln -s ../meta/docker-compose.override.yml docker-compose.override.yml
-        docker compose run --rm --build ssh-build
+        docker compose run --rm --build build
         rm docker-compose.override.yml
     - name: start service
       run: |

@@ -7,5 +7,3 @@ WORKDIR /service
 COPY . .
 
 RUN gcc bambi-notes.c -o bambi-notes
-
-ENTRYPOINT tail -f /dev/null
