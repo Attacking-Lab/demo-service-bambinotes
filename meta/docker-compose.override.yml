@@ -10,6 +10,6 @@ services:
     build: ../meta/
     volumes:
       - ./:/service
-    command: /bin/cp /build/bin/gitter-shell /service/ssh/gitter-shell
+    command: /bin/cp /meta/bambi-notes /service/bambi-notes
     profiles:
       - donotstart # Service doesn't start with docker-compose up
