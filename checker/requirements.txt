@@ -1,4 +1,4 @@
-enochecker3==0.6.0
+enochecker3 @ git+https://github.com/Attacking-Lab/enochecker3.git@v0.11.2
 uvicorn
 gunicorn
 faker
