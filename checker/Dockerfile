@@ -1,4 +1,4 @@
-FROM python:3.9-buster
+FROM python:3.12-bookworm
 RUN apt-get update && apt-get update -y 
 
 # add checker user
