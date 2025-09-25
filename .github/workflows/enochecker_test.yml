@@ -32,6 +32,18 @@ jobs:
         ln -s ../meta/docker-compose.override.yml docker-compose.override.yml
         docker compose run --rm --build build
         rm docker-compose.override.yml
+    - name: pin service dockerfile
+      uses: attacking-lab/actions/pin-service
+      with:
+        dockerfile: service/Dockerfile
+        image-archive: checker_archive
+    
+    - name: pin checker dockerfile
+      uses: attacking-lab/actions/pin-service
+      with:
+        dockerfile: checker/Dockerfile
+        image-archive: checker_archive
+      
     - name: start service
       run: |
         cd service
