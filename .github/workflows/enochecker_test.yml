@@ -37,13 +37,20 @@ jobs:
       uses: attacking-lab/actions/pin-images@main
       with:
         dockerfile: service/Dockerfile
-        image-archive: checker_archive
+        image-archive: service_images
+      
     - name: pin checker dockerfile
       uses: attacking-lab/actions/pin-images@main
       with:
         dockerfile: checker/Dockerfile
-        image-archive: checker_archive
+        image-archive: checker_images
       
+    - name: "Upload Service Artifacts"
+      uses: attacking-lab/actions/package-service@main
+      # with:
+      #   dockerfile: checker/Dockerfile
+      #   image-archive: checker_archive
+
     - name: start service
       run: |
         cd service
@@ -60,11 +67,6 @@ jobs:
       run: |
         enochecker_test
 
-    - name: "Upload Service Artifact"
-      uses: attacking-lab/actions/package-service@main
-      # with:
-      #   dockerfile: checker/Dockerfile
-      #   image-archive: checker_archive
 
     - name: Dump docker logs on failure
       if: failure()
