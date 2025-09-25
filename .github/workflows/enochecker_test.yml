@@ -59,6 +59,13 @@ jobs:
     - name: run enochecker_test
       run: |
         enochecker_test
+
+    - name: "Upload Service Artifact"
+      uses: attacking-lab/actions/package-service@main
+      # with:
+      #   dockerfile: checker/Dockerfile
+      #   image-archive: checker_archive
+
     - name: Dump docker logs on failure
       if: failure()
       uses: jwalton/gh-docker-logs@v1
