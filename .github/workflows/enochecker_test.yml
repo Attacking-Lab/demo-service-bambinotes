@@ -58,6 +58,7 @@ jobs:
     - name: start checker
       run: |
         cd checker
+        echo "GITHUB_PAT=${{ secrets.CI_PAT }}" >> .env
         docker compose up --build --force-recreate -d
     - name: obtain Docker host IP
       run: |
