@@ -2,7 +2,10 @@ version: '2.1'
 
 services:
   bambinotes-checker:
-    build: .
+    build:
+      context: .
+      secrets:
+        - github-pat
     # The checker runs a HTTP interfaces, so we need to map port 3031 to the outside (port 8000).
     ports:
       - 5008:8000
@@ -21,6 +24,7 @@ services:
       nproc:
         soft: 4000
         hard: 4000
+
   # The python checkerlib requires a mongo db!
   bambinotes-mongo:
     image: mongo
@@ -40,3 +44,7 @@ services:
       nproc:
         soft: 4000
         hard: 4000
+
+secrets:
+  github-pat:
+    environment: GITHUB_PAT

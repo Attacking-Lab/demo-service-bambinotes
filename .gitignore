@@ -4,3 +4,5 @@ data
 __pycache__
 service/docker-compose.override.yml
 service/bambi-notes
+
+.env
