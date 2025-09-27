@@ -1,9 +1,14 @@
 version: '3'
 
 services:
-  bambi-notes:
+  bambinotes:
+    container_name: bambinotes
     build: .
     volumes:
       - ./data/:/service/data:rw
     ports:
       - 8204:8204
+
+networks:
+  default:
+    name: bambinotes

@@ -2,6 +2,7 @@ version: '2.1'
 
 services:
   bambinotes-checker:
+    container_name: bambinotes-checker
     build:
       context: .
       secrets:
@@ -27,6 +28,7 @@ services:
 
   # The python checkerlib requires a mongo db!
   bambinotes-mongo:
+    container_name: bambinotes-mongo
     image: mongo
     #ports:
     #  - 27017:27017
@@ -48,3 +50,7 @@ services:
 secrets:
   github-pat:
     environment: GITHUB_PAT
+
+networks:
+  default:
+    name: bambinotes-checker
