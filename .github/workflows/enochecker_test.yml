@@ -23,7 +23,7 @@ jobs:
     - name: Install enochecker_test
       run: |
         python -m pip install --upgrade pip
-        pip install enochecker_test
+        pip install https://github.com/attacking-lab/enochecker_test@v0.13.0
     - name: build binary
       run: |
         cd service
