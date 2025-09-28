@@ -35,7 +35,7 @@ class InvalidCredentialsException(MumbleException):
     def __init__(self):
         super().__init__("Login Failed!")
 
-SERVICE_PORT = 8204
+SERVICE_PORT = 9204
 checker = Enochecker("bambi-notes", SERVICE_PORT)
 app = lambda: checker.app
 
