@@ -16,15 +16,15 @@ services:
       - MONGO_PORT=27017
       - MONGO_USER=bambinotes
       - MONGO_PASSWORD=bambinotes
-    mem_limit: 1G
-    memswap_limit: 2G
-    ulimits:
-      core:
-        soft: 0
-        hard: 0
-      nproc:
-        soft: 4000
-        hard: 4000
+    # mem_limit: 1G
+    # memswap_limit: 2G
+    # ulimits:
+    #   core:
+    #     soft: 0
+    #     hard: 0
+    #   nproc:
+    #     soft: 4000
+    #     hard: 4000
     restart: unless-stopped
 
   # The python checkerlib requires a mongo db!
@@ -38,15 +38,15 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: bambinotes
       MONGO_INITDB_ROOT_PASSWORD: bambinotes
-    mem_limit: 1G
-    memswap_limit: 2G
-    ulimits:
-      core:
-        soft: 0
-        hard: 0
-      nproc:
-        soft: 4000
-        hard: 4000
+    # mem_limit: 1G
+    # memswap_limit: 2G
+    # ulimits:
+    #   core:
+    #     soft: 0
+    #     hard: 0
+    #   nproc:
+    #     soft: 4000
+    #     hard: 4000
     restart: unless-stopped
 
 secrets:
