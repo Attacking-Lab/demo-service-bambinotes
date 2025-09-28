@@ -25,6 +25,7 @@ services:
       nproc:
         soft: 4000
         hard: 4000
+    restart: unless-stopped
 
   # The python checkerlib requires a mongo db!
   bambinotes-mongo:
@@ -46,6 +47,7 @@ services:
       nproc:
         soft: 4000
         hard: 4000
+    restart: unless-stopped
 
 secrets:
   github-pat:
