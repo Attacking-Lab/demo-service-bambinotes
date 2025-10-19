@@ -1,0 +1,15 @@
+[project]
+name = "bambinotes-checker"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "enochecker-core",
+    "enochecker3",
+    "faker>=37.11.0",
+    "gunicorn>=23.0.0",
+    "uvicorn>=0.34.3",
+]
+
+[tool.uv.sources]
+enochecker3 = { git = "https://github.com/Attacking-Lab/enochecker3.git", rev = "v0.13.4" }
+enochecker-core = { git = "https://github.com/attacking-lab/enochecker-core", rev = "v0.13.0" }
