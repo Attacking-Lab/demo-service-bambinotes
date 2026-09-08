@@ -2,6 +2,9 @@ version = 1
 revision = 3
 requires-python = ">=3.13"
 
+[manifest]
+overrides = [{ name = "enochecker-core", git = "https://git.atklab.cloud/atklab/enochecker-core?rev=v0.13.0" }]
+
 [[package]]
 name = "annotated-types"
 version = "0.7.0"
@@ -38,8 +41,8 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "enochecker-core", git = "https://github.com/attacking-lab/enochecker-core?rev=v0.13.0" },
-    { name = "enochecker3", git = "https://github.com/Attacking-Lab/enochecker3.git?rev=v0.13.4" },
+    { name = "enochecker-core", git = "https://git.atklab.cloud/atklab/enochecker-core?rev=v0.13.0" },
+    { name = "enochecker3", git = "https://git.atklab.cloud/atklab/enochecker3?rev=v0.13.4" },
     { name = "faker", specifier = ">=37.11.0" },
     { name = "gunicorn", specifier = ">=23.0.0" },
     { name = "uvicorn", specifier = ">=0.34.3" },
@@ -87,7 +90,7 @@ wheels = [
 [[package]]
 name = "enochecker-core"
 version = "0.13.0"
-source = { git = "https://github.com/attacking-lab/enochecker-core?rev=v0.13.0#da20abe0973a5596d21a2e725263b07078cf2ff8" }
+source = { git = "https://git.atklab.cloud/atklab/enochecker-core?rev=v0.13.0#da20abe0973a5596d21a2e725263b07078cf2ff8" }
 dependencies = [
     { name = "pydantic" },
 ]
@@ -95,7 +98,7 @@ dependencies = [
 [[package]]
 name = "enochecker3"
 version = "0.13.4"
-source = { git = "https://github.com/Attacking-Lab/enochecker3.git?rev=v0.13.4#4c5373eea42545ae996ba08263656d4b4efd0233" }
+source = { git = "https://git.atklab.cloud/atklab/enochecker3?rev=v0.13.4#4c5373eea42545ae996ba08263656d4b4efd0233" }
 dependencies = [
     { name = "enochecker-core" },
     { name = "fastapi" },

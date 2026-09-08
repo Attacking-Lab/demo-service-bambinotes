@@ -11,8 +11,8 @@ RUN chown checker /checker
 
 USER checker
 COPY pyproject.toml uv.lock .
-RUN --mount=type=secret,id=github-pat,env=GITHUB_PAT \
-	git-pass -p "${GITHUB_PAT:?GITHUB PAT not set}" -- \
+RUN --mount=type=secret,id=checker-pull-token,uid=1000 \
+	git-pass -U https://git.atklab.cloud -p "$(cat /run/secrets/checker-pull-token)" -- \
 		uv sync --exact --frozen
 
 COPY ./src .
