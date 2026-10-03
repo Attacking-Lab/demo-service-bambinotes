@@ -4,7 +4,7 @@ RUN apt-get update && apt-get upgrade -y
 RUN apt-get install -y xinetd
 RUN useradd author
 
-COPY xinetd.conf /etc/xinetd.conf
+COPY xinetd.conf.template /etc/xinetd.conf.template
 
 WORKDIR /service
 COPY ./bambi-notes ./bambi-notes

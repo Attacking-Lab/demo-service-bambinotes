@@ -1,0 +1,27 @@
+#!/bin/sh
+set -e
+
+python3 - <<'PY'
+import sys
+
+path = "bambi-notes"
+data = bytearray(open(path, "rb").read())
+
+
+def patch_immediate(sig, value, what):
+    hits = [i for i in range(len(data) - len(sig) + 1) if data[i:i + len(sig)] == sig]
+    if len(hits) != 1:
+        sys.exit(f"expected exactly one {what} to patch, found {len(hits)}")
+    data[hits[0] + 1] = value
+
+
+# init_user(): calloc(1, sizeof(DEFAULT_NOTE)) -> calloc(1, NOTE_SIZE)
+patch_immediate(
+    b"\xbe\x37\x00\x00\x00\xbf\x01\x00\x00\x00", 0x60, "default note allocation"
+)
+
+# load_note(): read(.., .., NOTE_SIZE) -> read(.., .., NOTE_SIZE - 1)
+patch_immediate(b"\xba\x60\x00\x00\x00", 0x5f, "read-count immediate")
+
+open(path, "wb").write(data)
+PY

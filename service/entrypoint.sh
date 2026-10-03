@@ -10,6 +10,8 @@ cleaner () {
 
 DATA_DIR="/service/data"
 
+sed "s/SERVICE_PORT_PLACEHOLDER/${SERVICE_PORT:-9000}/" /etc/xinetd.conf.template > /etc/xinetd.conf
+
 xinetd
 chown author:author "$DATA_DIR"
 cleaner "$DATA_DIR" &

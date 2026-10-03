@@ -3,12 +3,21 @@ name: bambinotes
 services:
   bambinotes:
     container_name: bambinotes
-    build: .
+    build:
+      context: .
+    environment:
+      SERVICE_PORT: ${SERVICE_PORT:-9000}
     volumes:
       - ./data/:/service/data:rw
     ports:
-      - 9204:8204
+      - ${SERVICE_PORT:-9000}:${SERVICE_PORT:-9000}
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/localhost/${SERVICE_PORT:-9000}'"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
 
 networks:
   default:
